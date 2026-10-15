@@ -3,12 +3,15 @@
 // GET  /api/sheet?c=3            → 3반의 모둠 내용 전체와 모둠 수(meta)
 // PUT  /api/sheet?c=3&g=2        → 3반 2모둠 내용 저장 (본문: {"data": {...}})
 // PUT  /api/sheet?c=3&meta=1     → 3반 모둠 수 저장 (본문: {"count": 8})
+// PUT  /api/sheet?auth=1         → 초기화 비밀번호 확인 (본문: {"password": "0401"})
 import { getStore } from "@netlify/blobs";
 
 const DEFAULT_COUNT = 6;
 const MAX = 12;
 const MAX_CLASS = 12;
 const MAX_BYTES = 100000;
+// 초기화 비밀번호. 바꾸려면 Netlify의 환경 변수 RESET_PASSWORD를 설정하거나 아래 "0401"을 고쳐요.
+const DEFAULT_RESET_PASSWORD = "0401";
 
 export async function handle(req, store) {
   const url = new URL(req.url);
@@ -17,6 +20,18 @@ export async function handle(req, store) {
       status,
       headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
     });
+
+  if (req.method === "PUT" && url.searchParams.get("auth")) {
+    let body = null;
+    try {
+      body = JSON.parse(await req.text());
+    } catch {}
+    const given = String((body && body.password) || "");
+    const expected = String((typeof process !== "undefined" && process.env && process.env.RESET_PASSWORD) || DEFAULT_RESET_PASSWORD);
+    const ok = given === expected;
+    if (!ok) await new Promise((resolve) => setTimeout(resolve, 700));
+    return json({ ok }, ok ? 200 : 403);
+  }
 
   const c = parseInt(url.searchParams.get("c"), 10);
   if (!(c >= 1 && c <= MAX_CLASS)) return json({ error: "반 번호가 맞지 않아요." }, 400);

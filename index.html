@@ -41,6 +41,8 @@ body{background:var(--desk);color:var(--ink);font-family:var(--font-body);line-h
 .gtab[aria-pressed="true"]{background:var(--tab);border-color:var(--tab);color:var(--tab-ink)}
 .gtab.has::after{content:"";position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--ok)}
 .gtab.add{border-style:dashed;background:transparent;color:var(--muted)}
+.pw{font:inherit;font-size:.85rem;width:7rem;padding:.38rem .55rem;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink)}
+.pwerr{color:var(--minus);font-size:.85rem;font-weight:700}
 .gate{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:clamp(20px,4vw,44px);display:grid;gap:14px;justify-items:center;text-align:center}
 .gate p{margin:0;color:var(--muted)}
 .gate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;width:100%;max-width:760px;margin-top:6px}
@@ -189,8 +191,10 @@ body.clean textarea{resize:none}
         </span>
         <span id="resetAsk" hidden>
           <span id="askMsg" style="font-size:.85rem"></span>
+          <input type="password" id="pwInput" class="pw" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="비밀번호" aria-label="초기화 비밀번호">
           <button type="button" class="btn danger" id="resetYes">초기화</button>
           <button type="button" class="btn" id="resetNo">취소</button>
+          <span id="pwErr" class="pwerr" role="alert"></span>
         </span>
       </span>
     </div>
@@ -418,7 +422,6 @@ body.clean textarea{resize:none}
     gnum.textContent=cls+'반 '+(g+1)+'모둠';
     tabs.forEach(function(b,i){b.setAttribute('aria-pressed',String(i===g))});
     totals();dots();syncNav();
-    resetAsk(false);
   }
 
   sheet.addEventListener('input',function(e){
@@ -457,13 +460,16 @@ body.clean textarea{resize:none}
   document.getElementById('cleanBtn').addEventListener('click',function(){document.body.classList.add('clean');window.scrollTo(0,0);fit();});
   document.getElementById('exitClean').addEventListener('click',function(){document.body.classList.remove('clean');fit();});
   var ask=document.getElementById('resetAsk'),rbs=document.getElementById('resetBtns'),askMsg=document.getElementById('askMsg');
+  var pwInput=document.getElementById('pwInput'),pwErr=document.getElementById('pwErr'),yesBtn=document.getElementById('resetYes');
   var pending=null;
   function resetAsk(kind){
     pending=kind||null;
     ask.hidden=!pending;rbs.hidden=!!pending;
+    pwErr.textContent='';pwInput.value='';
     if(pending==='one')askMsg.textContent=cls+'반 '+(g+1)+'모둠 내용을 모두 지울까요?';
     else if(pending==='all')askMsg.textContent=cls+'반 모든 모둠('+count+'개) 내용을 지울까요?';
     else if(pending==='remove')askMsg.textContent=cls+'반 '+count+'모둠을 빼고 그 내용도 지울까요?';
+    if(pending)setTimeout(function(){pwInput.focus()},0);
   }
   function wipe(i){
     data[i]=blank();
@@ -474,14 +480,32 @@ body.clean textarea{resize:none}
   document.getElementById('resetAllBtn').addEventListener('click',function(){resetAsk('all')});
   document.getElementById('removeBtn').addEventListener('click',function(){resetAsk('remove')});
   document.getElementById('resetNo').addEventListener('click',function(){resetAsk(false)});
-  document.getElementById('resetYes').addEventListener('click',function(){
+  // 비밀번호를 서버에서 확인한 뒤에만 지운다.
+  async function confirmReset(){
     var kind=pending;
+    if(!kind)return;
+    var pw=pwInput.value.trim();
+    if(!pw){pwErr.textContent='비밀번호를 입력해요.';pwInput.focus();return}
+    yesBtn.disabled=true;
+    var status=0;
+    try{
+      var r=await fetch(API+'?auth=1',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({password:pw})});
+      status=r.status;
+    }catch(e){status=0}
+    yesBtn.disabled=false;
+    if(status===403){pwErr.textContent='비밀번호가 맞지 않아요.';pwInput.select();return}
+    if(status!==200){pwErr.textContent='연결이 안 돼서 비밀번호를 확인할 수 없어요.';return}
     resetAsk(false);
     if(kind==='one')wipe(g);
     else if(kind==='all'){for(var k=0;k<count;k++)wipe(k)}
     else if(kind==='remove'){wipe(count-1);setCount(count-1);pushMeta()}
     else return;
     fill();fitIfClean();
+  }
+  yesBtn.addEventListener('click',confirmReset);
+  pwInput.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();confirmReset()}
+    else if(e.key==='Escape'){resetAsk(false)}
   });
   document.getElementById('autoBtn').addEventListener('click',function(){S().finalAuto=true;totals();save();});
 
@@ -673,6 +697,7 @@ body.clean textarea{resize:none}
   function go(t){
     if(t<0||t>=count)return;
     g=t;store.set(KLAST,String(g));
+    resetAsk(false);
     fill();fitIfClean();
   }
   function syncNav(){
