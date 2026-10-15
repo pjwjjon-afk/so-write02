@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>해결 방안 발표지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: 위에 모둠 탭 → 노트 한 장(1 아이디어 / 2 장단점 별점표 / 3 결정). 발표 화면에서는 도구를 숨겨 한 장만 남긴다. */
+:root{
+  --desk:#E6ECF1; --sheet:#FFFFFF; --ink:#23282F; --muted:#5E6873; --line:#C4CFD9;
+  --tab:#EBA43A; --tab-ink:#2B1B00; --star:#2461C8; --minus:#C2263F; --field:#F5F8FA;
+  --focus:#2461C8; --ok:#1B7F52;
+  --font-display:'Jua','Noto Sans KR',sans-serif;
+  --font-body:'Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#12161B; --sheet:#1C222A; --ink:#EEF1F4; --muted:#9AA5B1; --line:#37424E;
+    --tab:#E0A040; --tab-ink:#2B1B00; --star:#7BAAFF; --minus:#FF8497; --field:#232B35;
+    --focus:#7BAAFF; --ok:#5CCB98; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#12161B; --sheet:#1C222A; --ink:#EEF1F4; --muted:#9AA5B1; --line:#37424E;
+  --tab:#E0A040; --tab-ink:#2B1B00; --star:#7BAAFF; --minus:#FF8497; --field:#232B35;
+  --focus:#7BAAFF; --ok:#5CCB98; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--desk);color:var(--ink);font-family:var(--font-body);line-height:1.5;padding-inline:16px;padding-block:20px 48px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;display:grid;gap:14px}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.gtabs{display:flex;flex-wrap:wrap;gap:6px}
+.gtab{font:inherit;font-weight:700;padding:.45rem 1rem;border:2px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:999px;cursor:pointer;position:relative}
+.gtab[aria-pressed="true"]{background:var(--tab);border-color:var(--tab);color:var(--tab-ink)}
+.gtab.has::after{content:"";position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.gtab.add{border-style:dashed;background:transparent;color:var(--muted)}
+.gate{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:clamp(20px,4vw,44px);display:grid;gap:14px;justify-items:center;text-align:center}
+.gate p{margin:0;color:var(--muted)}
+.gate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;width:100%;max-width:760px;margin-top:6px}
+.gate-grid button{font:inherit;font-family:var(--font-display);font-size:1.5rem;padding:.9rem .5rem;border:2px solid var(--line);border-radius:12px;background:var(--field);color:var(--ink);cursor:pointer}
+.gate-grid button:hover{border-color:var(--tab)}
+body.no-class .toolbar,body.no-class .sheet{display:none}
+.tools{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:.85rem;padding:.4rem .8rem;border-radius:8px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.danger{color:var(--minus);border-color:var(--minus)}
+.chk{display:flex;gap:.4rem;align-items:center;font-size:.85rem;color:var(--muted);cursor:pointer}
+.chk input{width:1.05rem;height:1.05rem;accent-color:var(--star)}
+
+/* sheet */
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:clamp(16px,3vw,32px);display:grid;gap:28px;min-width:0}
+.sheet-head{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:flex-end}
+.eyebrow{margin:0 0 .2rem;font-size:.8rem;letter-spacing:.04em;color:var(--muted)}
+h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(1.6rem,3.4vw,2.4rem);line-height:1.2;text-wrap:balance}
+.who{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.gnum{font-family:var(--font-display);background:var(--tab);color:var(--tab-ink);padding:.2rem .9rem;border-radius:999px;font-size:1.2rem}
+.who label{display:flex;gap:.5rem;align-items:center;font-size:.9rem;color:var(--muted)}
+.who input{font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:2px solid var(--line);padding:.2rem .1rem;width:min(18rem,60vw)}
+
+.step{display:grid;gap:12px;min-width:0}
+.step-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem .8rem}
+.num{display:inline-grid;place-items:center;width:1.9rem;height:1.9rem;border-radius:50%;background:var(--ink);color:var(--sheet);font-family:var(--font-display);font-size:1.05rem;align-self:center}
+h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:1.35rem}
+.step-h p{margin:0;font-size:.88rem;color:var(--muted)}
+
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);gap:18px}
+.fold{display:grid;align-content:start;min-width:0}
+.lbl{justify-self:start;background:var(--tab);color:var(--tab-ink);font-family:var(--font-display);padding:.25rem .9rem;border-radius:8px 8px 0 0;font-size:1rem}
+.box{border:2px solid var(--line);border-radius:0 10px 10px 10px;padding:.5rem .8rem .7rem;min-width:0}
+.lined{display:block;width:100%;border:0;background-color:transparent;color:var(--ink);font:inherit;line-height:2rem;min-height:8rem;padding:0 .1rem;resize:vertical;
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(2rem - 1px),var(--line) calc(2rem - 1px),var(--line) 2rem);background-attachment:local}
+.lined.short{min-height:4rem}
+.lined.big{font-size:1.15rem;min-height:6rem}
+.ideas{display:grid;gap:0;padding-block:.2rem}
+.idea{display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--line);min-height:2.8rem}
+.idea:last-child{border-bottom:0}
+.idea .n{flex:none;display:inline-grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--tab);color:var(--tab-ink);font-family:var(--font-display);font-size:.85rem}
+.idea input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;padding:.45rem .1rem}
+.nm{display:block;font-size:.95rem;font-weight:500;min-height:3.6rem;overflow-wrap:anywhere}
+.nm:empty::before{content:attr(data-ph);color:var(--muted);font-weight:400;font-size:.88rem}
+::placeholder{color:var(--muted);opacity:.75}
+
+/* table */
+.tablewrap{overflow-x:auto;border:2px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:1100px;table-layout:fixed}
+th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:.6rem;vertical-align:top;text-align:left}
+tr>*:last-child{border-right:0}
+tbody tr:last-child>*{border-bottom:0}
+thead th{background:var(--tab);color:var(--tab-ink);font-family:var(--font-display);font-weight:400;font-size:.95rem;text-align:center;vertical-align:middle;line-height:1.3}
+tbody th{font-weight:400}
+.rn{display:block;font-family:var(--font-display);margin-bottom:.35rem}
+.cell{display:block;width:100%;border:1px dashed var(--line);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:.92rem;line-height:1.45;min-height:3.6rem;padding:.35rem .5rem;resize:none;field-sizing:content}
+.stars{display:flex;align-items:center;gap:1px;margin-top:.45rem;white-space:nowrap}
+.sign{font-weight:700;margin-right:.25rem;color:var(--star);font-size:1.1rem}
+.stars[data-k="c"] .sign{color:var(--minus)}
+.st{border:0;background:none;padding:0;font-size:1.25rem;line-height:1;cursor:pointer;color:var(--muted);font-family:inherit}
+.st.on{color:var(--star)}
+.stars[data-k="c"] .st.on,.ex .con .st.on{color:var(--minus)}
+.st:disabled{cursor:default}
+.tot{text-align:center;vertical-align:middle}
+.tot b{display:block;font-family:var(--font-display);font-weight:400;font-size:1.9rem;line-height:1.1}
+.tot small{color:var(--muted);font-size:.8rem}
+.pill{display:inline-block;margin-top:.35rem;font-size:.75rem;font-weight:700;color:var(--ok);border:1.5px solid var(--ok);border-radius:999px;padding:0 .5rem}
+tr.best .tot b{color:var(--ok)}
+.ex{background:var(--field)}
+.ex .exname{font-size:.92rem;margin:0}
+.ex p{margin:0;font-size:.92rem}
+.extag{display:inline-block;background:var(--ink);color:var(--sheet);font-size:.72rem;font-weight:700;border-radius:999px;padding:0 .55rem;margin-bottom:.35rem}
+.noex .ex{display:none}
+.hint{margin:0;font-size:.82rem;color:var(--muted)}
+
+.final{display:grid;gap:10px}
+.final .lbl2{font-size:.85rem;color:var(--muted);font-weight:700;margin:0}
+
+/* clean (발표 화면) */
+.exit-clean{display:none;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+body.clean .exit-clean{display:block}
+body.clean .toolbar,body.clean .hint,body.clean .ex{display:none}
+body.clean .cell{border-color:transparent;background:transparent}
+body.clean .who input{border-bottom-color:transparent}
+body.clean ::placeholder{color:transparent}
+body.clean .nm:empty::before{color:transparent}
+.pr{display:none}
+body.clean{padding:0;overflow:hidden}
+body.clean .wrap{position:fixed;left:0;top:0;width:1280px;max-width:none;margin:0;transform-origin:0 0}
+body.clean .sheet{gap:20px;padding:28px 32px}
+body.clean .sheet-head{align-items:flex-start}
+body.clean .eyebrow,body.clean .step-h p,body.clean .fold .lbl,body.clean tr.empty,body.clean .ed{display:none}
+body.clean .pr{display:inline}
+body.clean .pair{grid-template-columns:minmax(0,1fr)}
+body.clean .pair .fold:nth-child(2){display:none}
+body.clean .fold .box{border-radius:10px}
+body.clean .who{font-size:.8rem;gap:6px}
+body.clean .gnum{font-size:.9rem;padding:.05rem .65rem}
+body.clean .who input{width:10rem;text-align:left;font-size:.85rem}
+body.clean .lined,body.clean .lined.short{min-height:2rem}
+body.clean .lined.big{min-height:2.6rem}
+body.clean #problem{font-size:1.2rem}
+body.clean .cell{min-height:2rem}
+body.clean .nm{min-height:1.5rem;font-weight:700}
+body.clean .st{font-size:1.4rem}
+.pnav{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom,0px));gap:6px;align-items:center;max-width:calc(100vw - 16px)}
+body.clean .pnav{display:flex}
+.pnav .btn{min-width:2.4rem;font-size:1rem;padding:.3rem .6rem}
+.pnav .btn:disabled{opacity:.4;cursor:default}
+.pdot{font:inherit;font-weight:700;min-width:2.2rem;padding:.3rem .5rem;border-radius:999px;border:2px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer}
+.pdot[aria-pressed="true"]{background:var(--tab);border-color:var(--tab);color:var(--tab-ink)}
+.sync{font-size:.8rem;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem}
+.sync::before{content:"";width:.6rem;height:.6rem;border-radius:50%;background:var(--muted)}
+.sync.on{color:var(--ok)}.sync.on::before{background:var(--ok)}
+.sync.off{color:var(--minus)}.sync.off::before{background:var(--minus)}
+body.clean textarea{resize:none}
+
+@media (max-width:760px){
+  .pair{grid-template-columns:minmax(0,1fr)}
+  .tools{margin-left:0}
+}
+@media (prefers-reduced-motion:no-preference){
+  .gtab,.btn,.st{transition:background-color .15s,color .15s,border-color .15s}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <section class="gate" id="gate" hidden aria-label="반 고르기">
+    <h1>우리 반을 골라요</h1>
+    <p>1반부터 12반까지 중에서 우리 반을 눌러요.</p>
+    <div class="gate-grid" id="gateGrid"></div>
+  </section>
+  <div class="toolbar">
+    <div class="gtabs" role="group" aria-label="모둠 고르기" id="tabs"></div>
+    <div class="tools">
+      <label class="chk" for="exToggle"><input type="checkbox" id="exToggle" checked> 예시 줄 보기</label>
+      <button type="button" class="btn" id="classBtn">반 바꾸기</button>
+      <span class="sync" id="sync" role="status">연결 중…</span>
+      <button type="button" class="btn" id="cleanBtn">발표 화면</button>
+      <span id="resetArea">
+        <span id="resetBtns">
+          <button type="button" class="btn danger" id="resetBtn">이 모둠 초기화</button>
+          <button type="button" class="btn danger" id="resetAllBtn">전체 초기화</button>
+          <button type="button" class="btn" id="removeBtn">마지막 모둠 빼기</button>
+        </span>
+        <span id="resetAsk" hidden>
+          <span id="askMsg" style="font-size:.85rem"></span>
+          <button type="button" class="btn danger" id="resetYes">초기화</button>
+          <button type="button" class="btn" id="resetNo">취소</button>
+        </span>
+      </span>
+    </div>
+  </div>
+
+  <main class="sheet" id="sheet">
+    <header class="sheet-head">
+      <div>
+        <p class="eyebrow">사회 69쪽 · 1. 우리가 해결하는 지역문제</p>
+        <h1>우리 지역문제의 해결 방안 찾기</h1>
+      </div>
+      <div class="who">
+        <span class="gnum" id="gnum">1모둠</span>
+        <label for="members">모둠원 <input id="members" data-f="members" placeholder="이름을 적어요" autocomplete="off"></label>
+      </div>
+    </header>
+
+    <section class="step" aria-labelledby="h1s">
+      <div class="step-h"><span class="num">1</span><h2 id="h1s"><span class="ed">해결 방안 쓰기</span><span class="pr">해결할 문제</span></h2><p>모둠 친구들과 자유롭게 토의하고 해결 방안을 3개까지 써 보세요. 쓰면 2번 표에 자동으로 들어가요.</p></div>
+      <div class="pair">
+        <div class="fold">
+          <label class="lbl" for="problem">우리 지역의 문제</label>
+          <div class="box"><textarea id="problem" class="lined" data-f="problem" placeholder="예) 일회용 플라스틱 쓰레기 문제"></textarea></div>
+        </div>
+        <div class="fold">
+          <span class="lbl">모둠원들이 생각하는 해결 방안</span>
+          <div class="box ideas" role="group" aria-label="해결 방안 3개까지">
+            <label class="idea"><span class="n">1</span><input data-i="0" aria-label="해결 방안 1" placeholder="예) 일회용품 대신 다회용 컵을 가지고 다니기" autocomplete="off"></label>
+            <label class="idea"><span class="n">2</span><input data-i="1" aria-label="해결 방안 2" placeholder="두 번째 해결 방안" autocomplete="off"></label>
+            <label class="idea"><span class="n">3</span><input data-i="2" aria-label="해결 방안 3" placeholder="세 번째 해결 방안" autocomplete="off"></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="h2s">
+      <div class="step-h"><span class="num">2</span><h2 id="h2s">장단점 비교하고 정하기</h2><p>장단점을 비교한 뒤, 가장 실천 가능한 해결 방안을 정해 보세요.</p></div>
+      <div class="tablewrap" id="tablewrap">
+        <table>
+          <colgroup><col style="width:13%"><col style="width:18%"><col style="width:18%"><col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:12%"></colgroup>
+          <thead>
+            <tr><th scope="col">해결 방안</th><th scope="col">장점</th><th scope="col">단점</th><th scope="col">적절한 시간이<br>필요한가요?</th><th scope="col">적절한 비용이<br>필요한가요?</th><th scope="col">모두에게<br>도움이 되나요?</th><th scope="col">총 별점</th></tr>
+          </thead>
+          <tbody id="tbody">
+            <tr class="ex">
+              <th scope="row"><span class="extag">예시</span><p class="exname">일회용 컵 대신 다회용 컵 쓰기</p></th>
+              <td><p>일회용 컵 사용을 줄일 수 있다.</p><div class="stars" aria-label="장점 별점 5점"><span class="sign">+</span><span class="exstars" data-v="5" data-ex="1"></span></div></td>
+              <td class="con"><p>가지고 다니기 불편하다.</p><div class="stars" data-k="c" aria-label="단점 별점 3점"><span class="sign">−</span><span class="exstars" data-v="3" data-ex="1"></span></div></td>
+              <td><div class="stars" aria-label="시간 별점 4점"><span class="sign">+</span><span class="exstars" data-v="4" data-ex="1"></span></div></td>
+              <td><div class="stars" aria-label="비용 별점 4점"><span class="sign">+</span><span class="exstars" data-v="4" data-ex="1"></span></div></td>
+              <td><div class="stars" aria-label="도움 별점 4점"><span class="sign">+</span><span class="exstars" data-v="4" data-ex="1"></span></div></td>
+              <td class="tot"><b>14</b><small>별 14개</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">별을 눌러 점수를 줘요. 같은 별을 다시 누르면 지워져요. 총 별점 = 장점 + 시간 + 비용 + 도움 − 단점</p>
+    </section>
+
+    <section class="step" aria-labelledby="h3s">
+      <div class="step-h"><span class="num">3</span><h2 id="h3s">우리 모둠의 해결 방안</h2><p>모둠에서 결정한 우리 지역문제의 해결 방안을 써 보세요.</p></div>
+      <div class="final">
+        <div class="box" style="border-radius:10px"><textarea id="final" class="lined big" data-f="final" aria-label="모둠에서 결정한 해결 방안" placeholder="2번에서 별점을 주면 가장 높은 방안이 여기에 자동으로 적혀요."></textarea></div>
+        <p class="hint"><span id="autoNote"></span> <button type="button" class="btn" id="autoBtn" hidden>별점 1등으로 다시 채우기</button></p>
+        <p class="lbl2">그렇게 정한 까닭</p>
+        <div class="box" style="border-radius:10px"><textarea id="reason" class="lined short" data-f="reason" aria-label="그렇게 정한 까닭" placeholder="별점이 높고, 우리가 바로 실천할 수 있기 때문이에요."></textarea></div>
+      </div>
+    </section>
+  </main>
+</div>
+<button type="button" class="btn exit-clean" id="exitClean">편집 화면으로</button>
+<nav class="pnav" aria-label="모둠 넘기기">
+  <button type="button" class="btn" id="pPrev" aria-label="이전 모둠">‹</button>
+  <span id="pdots" style="display:flex;gap:6px" role="group" aria-label="모둠 고르기"></span>
+  <button type="button" class="btn" id="pNext" aria-label="다음 모둠">›</button>
+</nav>
+
+<script>
+(function(){
+  var R=3, DEFAULT=6, MAXG=12;
+  var CLASSES=12;
+  var hashC=parseInt((location.hash||'').replace('#',''),10);
+  var cls=0;
+  try{cls=(hashC>=1&&hashC<=CLASSES)?hashC:parseInt(localStorage.getItem('haegyeol-sheet-class')||'0',10)}catch(e){cls=(hashC>=1&&hashC<=CLASSES)?hashC:0}
+  if(!(cls>=1&&cls<=CLASSES))cls=0;
+  var KEY=function(i){return 'haegyeol-sheet-c'+cls+'-g'+i};
+  var KCOUNT='haegyeol-sheet-c'+cls+'-count';
+  var KLAST='haegyeol-sheet-c'+cls+'-last';
+  var store={
+    get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+    set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  };
+  function blankRow(){return {pro:'',con:'',p:0,c:0,t:0,m:0,h:0}}
+  function blank(){var rows=[];for(var i=0;i<R;i++)rows.push(blankRow());return {members:'',problem:'',ideas:['','',''],rows:rows,final:'',finalAuto:true,reason:''}}
+  // 저장된 값이나 받은 파일을 검사해서 한 모둠의 상태로 만든다.
+  function normalize(o){
+    var s=blank();
+    if(!o||typeof o!=='object')return s;
+    ['members','problem','final','reason'].forEach(function(k){if(typeof o[k]==='string')s[k]=o[k]});
+    s.finalAuto=typeof o.finalAuto==='boolean'?o.finalAuto:!s.final;
+    if(Array.isArray(o.ideas)){
+      for(var j=0;j<R;j++)if(typeof o.ideas[j]==='string')s.ideas[j]=o.ideas[j];
+    }else if(typeof o.ideas==='string'){
+      o.ideas.split('\n').map(function(v){return v.trim()}).filter(Boolean).slice(0,R).forEach(function(v,j){s.ideas[j]=v});
+    }
+    (Array.isArray(o.rows)?o.rows:[]).slice(0,R).forEach(function(r,j){
+      if(!r||typeof r!=='object')return;
+      ['pro','con'].forEach(function(k){if(typeof r[k]==='string')s.rows[j][k]=r[k]});
+      ['p','c','t','m','h'].forEach(function(k){var n=parseInt(r[k],10);if(n>=0&&n<=5)s.rows[j][k]=n});
+      if(typeof r.name==='string'&&r.name&&!s.ideas[j])s.ideas[j]=r.name;
+    });
+    return s;
+  }
+  var data=[];
+  for(var i=0;i<MAXG;i++){
+    var s;
+    try{var raw=store.get(KEY(i));s=raw?normalize(JSON.parse(raw)):blank()}catch(e){s=blank()}
+    data.push(s);
+  }
+  var count=parseInt(store.get(KCOUNT)||String(DEFAULT),10);
+  if(!(count>=1&&count<=MAXG))count=DEFAULT;
+  var g=0;
+  var last=parseInt(store.get(KLAST)||'0',10);
+  if(last>=0&&last<count)g=last;
+
+  var sheet=document.getElementById('sheet');
+  var tbody=document.getElementById('tbody');
+  var tabsEl=document.getElementById('tabs');
+  var gnum=document.getElementById('gnum');
+  var tabs=[];
+  var finalEl=document.getElementById('final');
+  var tie=false;
+
+  function S(){return data[g]}
+  function finalUI(){
+    var s=S();
+    var note=document.getElementById('autoNote'),btn=document.getElementById('autoBtn');
+    if(s.finalAuto){
+      note.textContent=tie?'별점이 같은 방안이 있어요. 하나를 골라 고쳐 써요.':'별점이 가장 높은 방안이 자동으로 들어가요. 고쳐 쓸 수도 있어요.';
+      btn.hidden=true;
+    }else{
+      note.textContent='직접 쓴 내용이에요.';
+      btn.hidden=false;
+    }
+  }
+  function starBtns(label,ro){
+    var h='';
+    for(var n=1;n<=5;n++)h+='<button type="button" class="st" data-n="'+n+'" aria-label="'+label+' '+n+'점"'+(ro?' disabled':'')+'>☆</button>';
+    return h;
+  }
+  function paint(box,v){
+    var bs=box.querySelectorAll('.st');
+    for(var i=0;i<bs.length;i++){
+      var on=i<v;
+      bs[i].classList.toggle('on',on);
+      bs[i].textContent=on?'★':'☆';
+      bs[i].setAttribute('aria-pressed',String(i+1===v));
+    }
+  }
+
+  // example row stars
+  document.querySelectorAll('.exstars').forEach(function(el){
+    el.innerHTML=starBtns('예시',true);
+    paint(el,parseInt(el.dataset.v,10));
+  });
+
+  // editable rows
+  for(var r=0;r<R;r++){
+    var tr=document.createElement('tr');
+    tr.dataset.r=r;
+    tr.innerHTML=
+      '<th scope="row"><span class="rn">해결 방안 '+(r+1)+'</span><span class="nm" data-nm data-ph="1번에서 쓰면 여기에 나와요"></span></th>'+
+      '<td><textarea class="cell" rows="2" data-k="pro" aria-label="해결 방안 '+(r+1)+' 장점" placeholder="장점"></textarea><div class="stars" data-k="p"><span class="sign">+</span>'+starBtns('장점 별점',false)+'</div></td>'+
+      '<td><textarea class="cell" rows="2" data-k="con" aria-label="해결 방안 '+(r+1)+' 단점" placeholder="단점"></textarea><div class="stars" data-k="c"><span class="sign">−</span>'+starBtns('단점 별점',false)+'</div></td>'+
+      '<td><div class="stars" data-k="t"><span class="sign">+</span>'+starBtns('시간 별점',false)+'</div></td>'+
+      '<td><div class="stars" data-k="m"><span class="sign">+</span>'+starBtns('비용 별점',false)+'</div></td>'+
+      '<td><div class="stars" data-k="h"><span class="sign">+</span>'+starBtns('도움 별점',false)+'</div></td>'+
+      '<td class="tot"><b>—</b><small></small><br><span class="pill" hidden>별점이 가장 높아요</span></td>';
+    tbody.appendChild(tr);
+  }
+  var rowEls=tbody.querySelectorAll('tr[data-r]');
+
+  function totals(){
+    var s=S(),tots=[],rated=0,max=-Infinity;
+    s.rows.forEach(function(r,i){
+      var any=r.p||r.c||r.t||r.m||r.h;
+      var tot=any?(r.p+r.t+r.m+r.h-r.c):null;
+      tots.push(tot);
+      if(tot!==null){rated++;if(tot>max)max=tot}
+    });
+    rowEls.forEach(function(tr,i){
+      var tot=tots[i];
+      tr.querySelector('.tot b').textContent=tot===null?'—':String(tot);
+      tr.querySelector('.tot small').textContent=tot===null?'':'별 '+tot+'개';
+      var best=tot!==null&&rated>=2&&tot===max&&tot>0;
+      tr.classList.toggle('best',best);
+      tr.querySelector('.pill').hidden=!best;
+      var rr=s.rows[i];
+      tr.classList.toggle('empty',!s.ideas[i]&&!rr.pro&&!rr.con&&tot===null);
+    });
+    if(s.finalAuto){
+      var names=[];
+      tots.forEach(function(tot,i){
+        if(tot!==null&&tot===max&&max>0)names.push(s.ideas[i]||('해결 방안 '+(i+1)));
+      });
+      s.final=names.join(' / ');
+      finalEl.value=s.final;
+      tie=names.length>1;
+    }
+    finalUI();
+  }
+  function hasData(i){return JSON.stringify(data[i])!==JSON.stringify(blank())}
+  function dots(){tabs.forEach(function(b,i){b.classList.toggle('has',hasData(i))})}
+  function save(){store.set(KEY(g),JSON.stringify(S()));dots();schedulePush(g);}
+
+  function fill(){
+    var s=S();
+    sheet.querySelectorAll('[data-f]').forEach(function(el){el.value=s[el.dataset.f]});
+    sheet.querySelectorAll('[data-i]').forEach(function(el){el.value=s.ideas[+el.dataset.i]});
+    rowEls.forEach(function(tr,i){
+      tr.querySelector('[data-nm]').textContent=s.ideas[i];
+      tr.querySelectorAll('textarea[data-k]').forEach(function(el){el.value=s.rows[i][el.dataset.k]});
+      tr.querySelectorAll('.stars[data-k]').forEach(function(b){paint(b,s.rows[i][b.dataset.k])});
+    });
+    gnum.textContent=cls+'반 '+(g+1)+'모둠';
+    tabs.forEach(function(b,i){b.setAttribute('aria-pressed',String(i===g))});
+    totals();dots();syncNav();
+    resetAsk(false);
+  }
+
+  sheet.addEventListener('input',function(e){
+    var el=e.target;
+    if(el.dataset.f){
+      S()[el.dataset.f]=el.value;
+      if(el.dataset.f==='final'){S().finalAuto=false;finalUI();}
+      save();
+    }
+    else if(el.dataset.i!==undefined){
+      var ix=+el.dataset.i;
+      S().ideas[ix]=el.value;
+      rowEls[ix].querySelector('[data-nm]').textContent=el.value;
+      totals();
+      save();
+    }
+    else if(el.dataset.k&&el.closest('tr[data-r]')){
+      S().rows[+el.closest('tr').dataset.r][el.dataset.k]=el.value;save();
+    }
+  });
+  sheet.addEventListener('click',function(e){
+    var b=e.target.closest('.st');
+    if(!b||b.disabled)return;
+    var box=b.parentElement,tr=box.closest('tr[data-r]');
+    if(!tr||!box.dataset.k)return;
+    var row=S().rows[+tr.dataset.r],k=box.dataset.k,n=parseInt(b.dataset.n,10);
+    row[k]=(row[k]===n)?0:n;
+    paint(box,row[k]);totals();save();
+  });
+
+  // toolbar actions
+  var wrapEl=document.getElementById('tablewrap');
+  document.getElementById('exToggle').addEventListener('change',function(e){
+    wrapEl.classList.toggle('noex',!e.target.checked);
+  });
+  document.getElementById('cleanBtn').addEventListener('click',function(){document.body.classList.add('clean');window.scrollTo(0,0);fit();});
+  document.getElementById('exitClean').addEventListener('click',function(){document.body.classList.remove('clean');fit();});
+  var ask=document.getElementById('resetAsk'),rbs=document.getElementById('resetBtns'),askMsg=document.getElementById('askMsg');
+  var pending=null;
+  function resetAsk(kind){
+    pending=kind||null;
+    ask.hidden=!pending;rbs.hidden=!!pending;
+    if(pending==='one')askMsg.textContent=cls+'반 '+(g+1)+'모둠 내용을 모두 지울까요?';
+    else if(pending==='all')askMsg.textContent=cls+'반 모든 모둠('+count+'개) 내용을 지울까요?';
+    else if(pending==='remove')askMsg.textContent=cls+'반 '+count+'모둠을 빼고 그 내용도 지울까요?';
+  }
+  function wipe(i){
+    data[i]=blank();
+    store.set(KEY(i),JSON.stringify(data[i]));
+    schedulePush(i);
+  }
+  document.getElementById('resetBtn').addEventListener('click',function(){resetAsk('one')});
+  document.getElementById('resetAllBtn').addEventListener('click',function(){resetAsk('all')});
+  document.getElementById('removeBtn').addEventListener('click',function(){resetAsk('remove')});
+  document.getElementById('resetNo').addEventListener('click',function(){resetAsk(false)});
+  document.getElementById('resetYes').addEventListener('click',function(){
+    var kind=pending;
+    resetAsk(false);
+    if(kind==='one')wipe(g);
+    else if(kind==='all'){for(var k=0;k<count;k++)wipe(k)}
+    else if(kind==='remove'){wipe(count-1);setCount(count-1);pushMeta()}
+    else return;
+    fill();fitIfClean();
+  });
+  document.getElementById('autoBtn').addEventListener('click',function(){S().finalAuto=true;totals();save();});
+
+  // 실시간 동기화: 고칠 때마다 서버에 보내고, 2.5초마다 다른 기기에서 고친 내용을 받아 온다.
+  var API='/api/sheet';
+  var syncEl=document.getElementById('sync');
+  var localT=[],dirty=[],timers=[];
+  for(var z=0;z<MAXG;z++){localT.push(0);dirty.push(false);timers.push(0)}
+  var metaT=0,metaDirty=false,metaTimer=0;
+  // 모둠 수를 바꾸고(위쪽 탭·발표 화면 번호 다시 그리기), 바뀌어서 보던 모둠이 사라지면 true를 돌려준다.
+  function setCount(n){
+    n=Math.max(1,Math.min(MAXG,n));
+    count=n;store.set(KCOUNT,String(n));
+    var moved=false;
+    if(g>=count){g=count-1;store.set(KLAST,String(g));moved=true}
+    renderGroups();
+    return moved;
+  }
+  function addGroup(){
+    if(count>=MAXG)return;
+    setCount(count+1);pushMeta();go(count-1);
+  }
+  async function pushMeta(){
+    if(!cls)return;
+    metaDirty=true;
+    clearTimeout(metaTimer);
+    try{
+      var r=await fetch(API+'?c='+cls+'&meta=1',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({count:count})});
+      if(!r.ok)throw new Error(String(r.status));
+      var j=await r.json();
+      if(j.t>metaT)metaT=j.t;
+      metaDirty=false;setStatus(true);
+    }catch(e){
+      setStatus(false);
+      metaTimer=setTimeout(pushMeta,3000);
+    }
+  }
+  function setStatus(ok){
+    syncEl.className='sync '+(ok?'on':'off');
+    syncEl.textContent=ok?'실시간 연결됨':'연결 안 됨 · 이 기기에만 저장 중';
+  }
+  function editing(){
+    var a=document.activeElement;
+    return !!a&&sheet.contains(a)&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA');
+  }
+  function schedulePush(i){
+    dirty[i]=true;
+    clearTimeout(timers[i]);
+    timers[i]=setTimeout(function(){flush(i)},500);
+  }
+  async function flush(i){
+    if(!dirty[i]||!cls)return;
+    var snap=JSON.stringify({data:data[i]});
+    try{
+      var r=await fetch(API+'?c='+cls+'&g='+(i+1),{method:'PUT',headers:{'content-type':'application/json'},body:snap});
+      if(!r.ok)throw new Error(String(r.status));
+      var j=await r.json();
+      if(JSON.stringify({data:data[i]})===snap)dirty[i]=false;
+      if(j.t>localT[i])localT[i]=j.t;
+      setStatus(true);
+    }catch(e){
+      setStatus(false);
+      clearTimeout(timers[i]);
+      timers[i]=setTimeout(function(){flush(i)},3000);
+    }
+  }
+  var polling=false;
+  async function poll(){
+    if(polling||document.hidden||!cls)return;
+    polling=true;
+    try{
+      var r=await fetch(API+'?c='+cls,{cache:'no-store'});
+      if(!r.ok)throw new Error(String(r.status));
+      var j=await r.json();
+      setStatus(true);
+      var changed=false;
+      if(j.meta&&j.meta.t>metaT&&!metaDirty){
+        metaT=j.meta.t;
+        if(j.meta.count>=1&&j.meta.count<=MAXG&&j.meta.count!==count){
+          if(setCount(j.meta.count))changed=true;
+        }
+      }
+      Object.keys(j.groups||{}).forEach(function(k){
+        var i=parseInt(k,10)-1,rec=j.groups[k];
+        if(!(i>=0&&i<MAXG)||!rec||!(rec.t>localT[i]))return;
+        if(dirty[i])return;
+        // 입력 중인 모둠은 건드리지 않는다. 다만 초기화로 비워진 내용은 바로 따라간다.
+        if(i===g&&editing()&&JSON.stringify(normalize(rec.data))!==JSON.stringify(blank()))return;
+        data[i]=normalize(rec.data);
+        localT[i]=rec.t;
+        store.set(KEY(i),JSON.stringify(data[i]));
+        if(i===g)changed=true;
+      });
+      dots();
+      if(changed){fill();fitIfClean();}
+    }catch(e){setStatus(false)}
+    polling=false;
+  }
+  setInterval(poll,2500);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)poll()});
+  poll();
+
+  // 발표 화면: 1280px 폭으로 그린 시트를 화면 크기에 맞춰 한 장으로 줄이거나 늘린다.
+  var wrapEl2=document.querySelector('.wrap');
+  function fit(){
+    var tas=wrapEl2.querySelectorAll('textarea');
+    if(!document.body.classList.contains('clean')){
+      wrapEl2.style.transform='';
+      tas.forEach(function(ta){ta.style.height=''});
+      return;
+    }
+    wrapEl2.style.transform='none';
+    tas.forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'});
+    var W=1280,H=wrapEl2.offsetHeight;
+    var availH=window.innerHeight-24-52;
+    var sc=Math.min((window.innerWidth-24)/W,availH/H);
+    var dx=(window.innerWidth-W*sc)/2,dy=12+(availH-H*sc)/2;
+    wrapEl2.style.transform='translate('+dx+'px,'+dy+'px) scale('+sc+')';
+  }
+  function fitIfClean(){if(document.body.classList.contains('clean'))fit()}
+
+  // 반 고르기: 고르면 그 반의 화면으로 다시 열린다. 반마다 내용이 따로 저장된다.
+  var gate=document.getElementById('gate');
+  gate.hidden=cls>0;
+  document.body.classList.toggle('no-class',!cls);
+  var gateGrid=document.getElementById('gateGrid');
+  for(var cc=1;cc<=CLASSES;cc++){
+    (function(cc){
+      var b=document.createElement('button');
+      b.type='button';b.textContent=cc+'반';
+      b.addEventListener('click',function(){chooseClass(cc)});
+      gateGrid.appendChild(b);
+    })(cc);
+  }
+  async function flushAll(){
+    var jobs=[];
+    for(var k=0;k<MAXG;k++){if(dirty[k]){clearTimeout(timers[k]);jobs.push(flush(k))}}
+    try{await Promise.all(jobs)}catch(e){}
+  }
+  async function chooseClass(n){
+    await flushAll();
+    store.set('haegyeol-sheet-class',String(n));
+    if(location.hash==='#'+n)location.reload();
+    else location.hash='#'+n;
+  }
+  window.addEventListener('hashchange',function(){
+    var n=parseInt((location.hash||'').replace('#',''),10);
+    if((n>=1&&n<=CLASSES)&&n!==cls){store.set('haegyeol-sheet-class',String(n));location.reload()}
+  });
+  document.getElementById('classBtn').addEventListener('click',async function(){
+    await flushAll();
+    store.set('haegyeol-sheet-class','0');
+    history.replaceState(null,'',location.pathname+location.search);
+    location.reload();
+  });
+  if(cls)store.set('haegyeol-sheet-class',String(cls));
+
+  // 모둠 탭(위)과 발표 화면 번호(아래)를 모둠 수에 맞춰 그린다.
+  var pdotEls=[];
+  var pdotsBox=document.getElementById('pdots');
+  var removeBtn=document.getElementById('removeBtn');
+  function renderGroups(){
+    tabsEl.innerHTML='';tabs.length=0;
+    pdotsBox.innerHTML='';pdotEls.length=0;
+    for(var q=0;q<count;q++){
+      (function(q){
+        var b=document.createElement('button');
+        b.type='button';b.className='gtab';b.textContent=(q+1)+'모둠';
+        b.addEventListener('click',function(){go(q)});
+        tabsEl.appendChild(b);tabs.push(b);
+        var d=document.createElement('button');
+        d.type='button';d.className='pdot';d.textContent=String(q+1);
+        d.setAttribute('aria-label',(q+1)+'모둠');
+        d.addEventListener('click',function(){go(q)});
+        pdotsBox.appendChild(d);pdotEls.push(d);
+      })(q);
+    }
+    if(count<MAXG){
+      var a=document.createElement('button');
+      a.type='button';a.className='gtab add';a.textContent='+ 모둠 추가';
+      a.setAttribute('aria-label','모둠 추가');
+      a.addEventListener('click',addGroup);
+      tabsEl.appendChild(a);
+    }
+    removeBtn.hidden=count<=1;
+    tabs.forEach(function(b,i){b.setAttribute('aria-pressed',String(i===g))});
+    dots();syncNav();
+  }
+  function go(t){
+    if(t<0||t>=count)return;
+    g=t;store.set(KLAST,String(g));
+    fill();fitIfClean();
+  }
+  function syncNav(){
+    pdotEls.forEach(function(b,i){b.setAttribute('aria-pressed',String(i===g))});
+    document.getElementById('pPrev').disabled=(g===0);
+    document.getElementById('pNext').disabled=(g===count-1);
+  }
+  renderGroups();
+  document.getElementById('pPrev').addEventListener('click',function(){go(g-1)});
+  document.getElementById('pNext').addEventListener('click',function(){go(g+1)});
+  document.addEventListener('keydown',function(e){
+    if(!document.body.classList.contains('clean'))return;
+    var tg=e.target&&e.target.tagName;
+    if(tg==='INPUT'||tg==='TEXTAREA')return;
+    if(e.key==='ArrowRight')go(g+1);
+    else if(e.key==='ArrowLeft')go(g-1);
+  });
+  sheet.addEventListener('input',fitIfClean);
+  sheet.addEventListener('click',fitIfClean);
+  window.addEventListener('resize',fitIfClean);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitIfClean);
+
+  fill();
+})();
+</script>
+
+</body>
+</html>

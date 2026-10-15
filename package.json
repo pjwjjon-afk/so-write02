@@ -1,0 +1,9 @@
+{
+  "name": "haegyeol-sheet",
+  "private": true,
+  "version": "1.0.0",
+  "description": "우리 지역문제의 해결 방안 찾기 발표지",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
